@@ -22,6 +22,7 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 		this.projectId = projectId;
 
 		this._login(password);
+		password = null;
 	}
 
 	private async _login(password: string) {
@@ -29,6 +30,7 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 			username: this.username,
 			password
 		});
+		password = null;
 		// @ts-ignore
 		const { body, response } = await request({
 			path: "/login/",
