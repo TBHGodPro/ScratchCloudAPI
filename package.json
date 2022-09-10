@@ -1,6 +1,6 @@
 {
 	"name": "scratchcloudapi",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "A Helper For Accessing The Scratch Cloud API",
 	"main": "dist/index.js",
 	"scripts": {
