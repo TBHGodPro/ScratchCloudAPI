@@ -1,6 +1,6 @@
 import { EventEmitter } from "stream";
 import WebSocket from "ws";
-import { CLOUD_SERVER, SERVER } from "./utils";
+import { SERVER } from "./utils";
 import TypedEmitter from "typed-emitter";
 import { Events } from "./Types";
 
@@ -11,14 +11,27 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 	public username: string;
 	public projectId: string;
 
-	constructor(sessionId: string, username: string, projectId: string) {
+	public CLOUD_SERVER: string;
+
+	constructor(sessionId: string, username: string, projectId: string, CLOUD_SERVER: string) {
 		super();
 
 		this.sessionId = sessionId;
 		this.username = username;
 		this.projectId = projectId;
+		this.CLOUD_SERVER = CLOUD_SERVER;
 
-		this.socket = new WebSocket(CLOUD_SERVER, [], {
+		this._setup();
+	}
+
+	private async _setup() {
+		if (this.socket) {
+			this.socket.close();
+			await new Promise(res => setTimeout(res, 2500));
+			if (this.socket.readyState != WebSocket.CLOSED) this.socket.terminate();
+		}
+		this.socket = null;
+		this.socket = new WebSocket(this.CLOUD_SERVER, [], {
 			headers: {
 				cookie: "scratchsessionsid=" + this.sessionId + ";",
 				origin: SERVER
@@ -49,7 +62,7 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 		});
 
 		this.socket.on("close", (code, reason) => {
-			this.emit("close", code, reason);
+			this._setup();
 		});
 	}
 

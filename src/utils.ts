@@ -4,7 +4,6 @@ import { IncomingMessage } from "http";
 
 export const SERVER = "https://scratch.mit.edu";
 export const API_SERVER = "https://api.scratch.mit.edu";
-export const CLOUD_SERVER = "wss://clouddata.scratch.mit.edu/";
 
 export { dirFetch, RequestInfo, RequestInit };
 

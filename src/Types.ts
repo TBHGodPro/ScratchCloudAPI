@@ -1,7 +1,6 @@
 export type Events = {
 	connected: () => void;
 	set: (name: string, value: string) => void;
-	close: (code: number, reason?: any) => void;
 };
 
 export interface User {

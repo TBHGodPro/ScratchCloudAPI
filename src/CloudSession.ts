@@ -13,13 +13,16 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 	public projectId: string;
 	public variables: Variable[] = [];
 
+	public turbowarp: boolean;
+
 	private sessionId: string;
 
-	constructor(username: string, password: string, projectId: string) {
+	constructor(username: string, password: string, projectId: string, turbowarp: boolean = false) {
 		super();
 
 		this.username = username;
 		this.projectId = projectId;
+		this.turbowarp = turbowarp;
 
 		this._login(password);
 		password = null;
@@ -57,17 +60,12 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 
 	private _setup() {
 		this.variables = [];
-		this.connection = new CloudWebsocket(this.sessionId, this.username, this.projectId);
+		this.connection = new CloudWebsocket(this.sessionId, this.username, this.projectId, this.turbowarp ? "wss://clouddata.turbowarp.org" : "wss://clouddata.scratch.mit.edu");
 
 		this.connection.on("connected", () => this.emit("connected"));
 		this.connection.on("set", (name, value) => {
 			this.emit("set", name, value);
 			this._set(name, value);
-		});
-
-		this.connection.on("close", () => {
-			this.connection = null;
-			this.connection = new CloudWebsocket(this.sessionId, this.username, this.projectId);
 		});
 	}
 
