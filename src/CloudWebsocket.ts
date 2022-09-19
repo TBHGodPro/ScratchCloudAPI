@@ -10,6 +10,7 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 	public sessionId: string;
 	public username: string;
 	public projectId: string;
+	public attempted_packets: { [key: string]: string }[] = [];
 
 	public CLOUD_SERVER: string;
 
@@ -20,16 +21,12 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 		this.username = username;
 		this.projectId = projectId;
 		this.CLOUD_SERVER = CLOUD_SERVER;
+		this.attempted_packets = [];
 
 		this._setup();
 	}
 
-	private async _setup() {
-		if (this.socket) {
-			this.socket.close();
-			await new Promise(res => setTimeout(res, 2500));
-			if (this.socket.readyState != WebSocket.CLOSED) this.socket.terminate();
-		}
+	private _setup() {
 		this.socket = null;
 		this.socket = new WebSocket(this.CLOUD_SERVER, [], {
 			headers: {
@@ -40,6 +37,8 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 
 		this.socket.on("open", () => {
 			this._send("handshake", {});
+			for (const packet of this.attempted_packets) this._sendRaw(packet);
+			this.attempted_packets = [];
 			this.emit("connected");
 		});
 
@@ -93,6 +92,11 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 			method,
 			...options
 		};
+		if (this.socket.readyState === WebSocket.OPEN) this._sendRaw(data);
+		else this.attempted_packets.push(data);
+	}
+
+	private _sendRaw(data: any) {
 		this.socket.send(JSON.stringify(data) + "\n");
 	}
 }
