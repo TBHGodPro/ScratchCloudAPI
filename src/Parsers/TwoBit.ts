@@ -25,7 +25,7 @@ export function encode(text: any) {
 		variables[index] = "";
 		for (const char of textSet.split("")) {
 			let parsed: any = keysList.indexOf(char);
-			if (parsed == -1) continue;
+			if (parsed === -1) continue;
 			// "+ 1" because scratch encoding will be 1 based, but js is 0 based
 			parsed += 1;
 			if (parsed < 10) {

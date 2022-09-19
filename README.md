@@ -26,3 +26,47 @@ cloud.on("set", (name, value) => {
 	// Code Here
 });
 ```
+
+## Parsing
+
+The library comes with built in data parsers, to view them, use the following:
+
+```js
+const API = require("scratchcloudapi");
+const Parsers = API.Parsers;
+
+// Example
+
+const Parser = Parsers.TwoBit;
+Parser.keys; // The keys for the TwoBit parsers
+Parser.keysList; // Same as the keys, but split into an array
+Parser.encode(); // Encode data
+Parser.decode(); // Decode data
+```
+
+To know more about the individual parsers, look below:
+
+### TwoBit
+
+<br/>
+
+Converts every character into a data piece stored into two bits, allowing 128 characters per cloud variable.
+
+Returns an array with all the variables that that text split into.
+
+Characters:
+
+(space)abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&\*()`~-\_=+{[]}\\|/:;‘“’”\'"?,.<>
+
+<br/>
+
+Example:
+
+```js
+const { TwoBit } = require("scratchcloudapi").Parsers;
+
+TwoBit.keys; // The keys for the parser
+TwoBit.keysList; // Same as the keys, but split into an array
+TwoBit.encode(); // Encode data
+TwoBit.decode(); // Decode data
+```
