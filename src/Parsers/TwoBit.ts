@@ -1,7 +1,14 @@
+// Characters The Parser Supports
 export const keys = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()`~-_=+{[]}\\|/:;‘“’”'\"?,.<>";
+// Same As The Keys, But Split Into An Array
 export const keysList = keys.split("");
 
-export function decode(text: string) {
+/**
+ * Decode Data With A TwoBit Parser
+ * @param {string} text The text to decode
+ * @returns {string} The decoded data
+ */
+export function decode(text: string): string {
 	let output = "";
 
 	for (var index = 0; index < text.length; index += 2) {
@@ -13,7 +20,12 @@ export function decode(text: string) {
 	return output;
 }
 
-export function encode(text: any) {
+/**
+ * Encode Data With A TwoBit Parser
+ * @param {string} text The text to encode
+ * @returns {string[]} The encoded data, split into 256 character-long variables
+ */
+export function encode(text: any): string[] {
 	if (!text) return [];
 	if (typeof text == "object") text = JSON.stringify(text);
 	if (typeof text != "string" && text.toString) text = text.toString();

@@ -20,12 +20,17 @@ const API = require("scratchcloudapi");
 // NOTE: Your passwords are never stored, you can look into the code for proof. We only use your password to login to scratch.
 const cloud = new API.CloudSession("Username", "Password", "Project ID");
 
-cloud.set("Variable Name", "Variable Value");
-
 cloud.on("set", (name, value) => {
+	cloud.set("Variable Name", "Variable Value");
 	// Code Here
 });
+
+cloud.on("connected", () => {
+	cloud.set("Variable Name", "Variable Value");
+});
 ```
+
+> NOTE: Other than adding listeners, you cannot do anything with the `cloud` object before the `connected` event
 
 ## Parsing
 
@@ -43,6 +48,8 @@ Parser.keysList; // Same as the keys, but split into an array
 Parser.encode(); // Encode data
 Parser.decode(); // Decode data
 ```
+
+> NOTE: Not all Parsers have the same values when imported, except they all have `encode()` and `decode()`
 
 To know more about the individual parsers, look below:
 
@@ -62,11 +69,11 @@ Characters:
 
 Example:
 
-```js
+```ts
 const { TwoBit } = require("scratchcloudapi").Parsers;
 
 TwoBit.keys; // The keys for the parser
 TwoBit.keysList; // Same as the keys, but split into an array
-TwoBit.encode(); // Encode data
-TwoBit.decode(); // Decode data
+TwoBit.encode(normalText: string); // Encode data
+TwoBit.decode(textContainingOnlyNumbers: string); // Decode data
 ```
