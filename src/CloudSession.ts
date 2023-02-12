@@ -1,14 +1,17 @@
 import { EventEmitter, once } from "node:events";
+import CloudWebsocket from "./CloudWebsocket";
 import TypedEmitter from "./TypedEmitter";
 import { Events, User } from "./Types";
+import { parseCookie, request } from "./utils";
 import Variable from "./Variable";
-import { request, parseCookie } from "./utils";
-import CloudWebsocket from "./CloudWebsocket";
 
 /** A Cloud Session */
 export default class CloudSession extends (EventEmitter as new () => TypedEmitter<Events>) {
 	/** The Session WebSocket */
 	public connection: CloudWebsocket;
+
+	/** Has the session sent the `connected` event yet */
+	public sentConnected: boolean = false;
 
 	/** The Session User */
 	public user: User;
@@ -37,16 +40,14 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 		this.projectId = projectId;
 
 		this._login(password);
-		password = null;
 	}
 
 	private async _login(password: string) {
 		const reqBody = JSON.stringify({
 			username: this.username,
-			password
+			password,
+			useMessages: true
 		});
-		password = null;
-		// @ts-ignore
 		const { body, response } = await request({
 			path: "/login/",
 			method: "POST",
@@ -58,11 +59,7 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 		this.user = user;
 		this.username = this.user.username;
 		this.id = this.user.id;
-		this.sessionId = (
-			parseCookie(response.headers["set-cookie"][0]) as {
-				scratchsessionsid: string;
-			}
-		).scratchsessionsid;
+		this.sessionId = (parseCookie(response.headers["set-cookie"][0]) as any).scratchsessionsid;
 		this._setup();
 	}
 
@@ -79,11 +76,27 @@ export default class CloudSession extends (EventEmitter as new () => TypedEmitte
 		this.variables = [];
 		this.connection = new CloudWebsocket(this.sessionId, this.username, this.projectId, "wss://clouddata.scratch.mit.edu");
 
-		this.connection.on("connected", this.emit);
+		this.connection.on("connected", () => {
+			if (!this.sentConnected) {
+				this.emit("connected");
+				this.sentConnected = true;
+			}
+		});
 		this.connection.on("set", (name, value) => {
 			this.emit("set", this._set(name, value));
 			// @ts-expect-error
 			this.emit(name, value);
+		});
+		this.connection.on("create", (name, value) => {
+			const variable = this._set(name, value);
+			this.emit("set", variable);
+			// @ts-expect-error
+			this.emit(variable.name, variable.value);
+			this.emit("create", variable);
+		});
+		this.connection.on("delete", name => {
+			const [variable] = this.variables.splice(this.variables.indexOf(this.variables.find(i => i.name == name)));
+			this.emit("delete", variable);
 		});
 	}
 

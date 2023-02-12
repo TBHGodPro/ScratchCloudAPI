@@ -1,4 +1,4 @@
-import { EventEmitter } from "node:events";
+import { EventEmitter, once } from "node:events";
 import WebSocket from "ws";
 import TypedEmitter from "./TypedEmitter";
 import { PacketMethod, WebsocketEvents } from "./Types";
@@ -52,7 +52,7 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 			this.send("handshake", {});
 			for (const packet of this.attempted_packets) this.sendRaw(packet);
 			this.attempted_packets = [];
-			this.emit("connected", "connected");
+			this.emit("connected");
 		});
 
 		let stream = "";
@@ -74,6 +74,7 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 		});
 
 		this.socket.on("close", (code, reason) => {
+			console.debug(`Closed With Code ${code} And Reason ${reason || '"NO REASON"'}`);
 			this._setup();
 		});
 	}
@@ -82,6 +83,15 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 		switch (packet.method) {
 			case "set":
 				this.emit("set", packet.name.substring(2), packet.value.toString());
+				break;
+			case "create":
+				this.emit("create", packet.name.substring(2), packet.value || "");
+				break;
+			case "delete":
+				this.emit("delete", packet.name.substring(2));
+				break;
+			case "ack":
+				this.emit("ack", packet.name.substring(2), packet.reply);
 				break;
 			default:
 				console.log("\n\n\nUNKOWN PACKET:\n");
@@ -101,6 +111,33 @@ export default class CloudWebsocket extends (EventEmitter as new () => TypedEmit
 			name: `☁ ${name}`,
 			value: value.toString()
 		});
+	}
+
+	/**
+	 * Send a create packet (and wait for an ack)
+	 * @param name The Variable Name
+	 * @param value The Variable Value (Defaults to "")
+	 */
+	public async _sendCreate(name: string, value: string = "") {
+		this.send("create", {
+			name: `☁ ${name}`,
+			value: value.toString()
+		});
+		const [_, reply] = await once(this, "ack");
+		if (reply === "OK") {
+			this.emit("create", name, value);
+		}
+	}
+
+	/**
+	 * Send a delete packet
+	 * @param name The Variable Name
+	 */
+	public _sendDelete(name: string) {
+		this.send("delete", {
+			name: `☁ ${name}`
+		});
+		this.emit("delete", name);
 	}
 
 	/**

@@ -8,6 +8,7 @@ export default interface TypedEventEmitter<Events> {
 	off<E extends keyof Events>(event: E, listener: Events[E]): this;
 	removeAllListeners<E extends keyof Events>(event?: E): this;
 	removeListener<E extends keyof Events>(event: E, listener: Events[E]): this;
+
 	// @ts-expect-error
 	emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): boolean;
 	// The sloppy `eventNames()` return type is to mitigate type incompatibilities - see #5

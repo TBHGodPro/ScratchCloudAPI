@@ -1,5 +1,6 @@
-import https from "https";
 import { IncomingMessage } from "http";
+import https from "https";
+import { RequestOptions } from "./Types";
 
 /**
  * Parse a cookie from the Scratch API
@@ -25,7 +26,7 @@ export function parseCookie(cookie: string): { [key: string]: any } {
  * @param options The request options
  * @returns The data from the request
  */
-export function request(options: { path: string; method: string; body?: any; headers?: { [key: string]: any }; sessionId?: string; hostname?: string }): Promise<{
+export function request(options: RequestOptions): Promise<{
 	body: any;
 	response: IncomingMessage;
 }> {

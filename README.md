@@ -28,6 +28,12 @@ cloud.on("set", (name, value) => {
 cloud.on("connected", () => {
 	cloud.set("Variable Name", "Variable Value");
 });
+
+// NOTE: You can add a listener for a specific variable change by doing:
+
+cloud.on("Variable Name", variableValue => {
+	// Code Here
+});
 ```
 
 > NOTE: Other than adding listeners, you cannot do anything with the `cloud` object before the `connected` event
